@@ -1,0 +1,102 @@
+services:
+  mkcert:
+    image: alpine:3.18
+    container_name: mkcert
+    restart: "no"
+    network_mode: "host"
+    volumes:
+      - certs:/certs
+    command:
+      - /bin/sh
+      - -c
+      - |
+        set -euxo pipefail
+
+        apk add --no-cache curl ca-certificates nss openssl iproute2
+
+        curl -L -o /usr/local/bin/mkcert \
+          https://github.com/FiloSottile/mkcert/releases/download/v1.4.4/mkcert-v1.4.4-linux-amd64
+        chmod +x /usr/local/bin/mkcert
+
+        # detect one reasonable LAN IP (IPv4). Fallback to empty if detection fails.
+        HOST_IP=$$( ip route get 8.8.8.8 2>/dev/null \
+          | sed -n 's/.* src \([0-9.]\+\).*/\1/p' || true )
+
+        HOSTS="localhost 127.0.0.1 ::1"
+        if [ -n "$$HOST_IP" ] && [ "$$HOST_IP" != "127.0.0.1" ] && [ "$${HOST_IP#127.}" = "$${HOST_IP}" ]; then
+          HOSTS="$$HOST_IP $$HOSTS"
+        fi
+
+        echo "mkcert: will create certs for: $$HOSTS"
+
+        mkcert -install || true
+
+        mkcert -cert-file /certs/fullchain.pem -key-file /certs/privkey.pem $$HOSTS
+
+        cp "$$( mkcert -CAROOT )/rootCA.pem" /certs/rootCA.pem || true
+        chmod 644 /certs/* || true
+
+        echo "mkcert: certificates written to /certs: fullchain.pem, privkey.pem, rootCA.pem"
+        sleep 2
+
+  stremio:
+    image: stremio/server:latest
+    container_name: stremio
+    restart: unless-stopped
+    network_mode: "host"
+    volumes:
+      - stremio-data:/root/.stremio
+    environment:
+      - PORT=11470
+
+  nginx:
+    image: nginx:alpine
+    container_name: stremio_nginx
+    depends_on:
+      - mkcert
+      - stremio
+    restart: unless-stopped
+    network_mode: "host"
+    volumes:
+      - certs:/etc/nginx/certs:ro
+    command:
+      - /bin/sh
+      - -c
+      - |
+        set -euxo pipefail
+        echo "nginx: waiting for certs in /etc/nginx/certs..."
+        while [ ! -f /etc/nginx/certs/fullchain.pem ] || [ ! -f /etc/nginx/certs/privkey.pem ]; do
+          sleep 1
+        done
+        cat >/etc/nginx/conf.d/default.conf <<'NGX'
+        server {
+          listen 80 default_server;
+          server_name _;
+          return 301 https://$$host$$request_uri;
+        }
+
+        server {
+          listen 443 ssl default_server;
+          server_name _;
+
+          ssl_certificate /etc/nginx/certs/fullchain.pem;
+          ssl_certificate_key /etc/nginx/certs/privkey.pem;
+          ssl_session_cache shared:SSL:10m;
+          ssl_session_timeout 10m;
+
+          location / {
+            proxy_pass http://127.0.0.1:11470;
+            proxy_set_header Host $$host;
+            proxy_set_header X-Real-IP $$remote_addr;
+            proxy_set_header X-Forwarded-For $$proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $$scheme;
+            proxy_http_version 1.1;
+            proxy_set_header Connection "";
+          }
+        }
+        NGX
+        nginx -g 'daemon off;'
+
+volumes:
+  certs:
+  stremio-data:
