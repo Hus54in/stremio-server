@@ -1,4 +1,4 @@
-# Stremio Server
+# Stremio Server for IOS/IPad OS
 This project provides a Dockerized Stremio server that makes it possible to run Stremio on a local Linux server and access it from devices on your local network.
 
 Normally, the [official Stremio iOS app](https://apps.apple.com/us/app/stremio-lite/id6741710156) only works as an organizer (it lets you browse and manage your library, but it cannot actually play videos). With this setup, the iOS app can connect to the local Stremio server and stream videos directly to iPhone or iPad.
@@ -22,7 +22,7 @@ This single-file docker-compose project wraps the official Stremio server image,
 2. Create a file using the docker compose for omv. Add a name and paste the contents of [docker-compose.yml]() in the file section.
 3. Save the file and click the up arrow icon (up button).
 
-## Stremio on IOS/Ipad OS
+## Stremio on IOS/IPad OS
 1. Open Safari (other browers will not work), then go to `https://<your-server-url>` (make sure its HTTPS and not http) replace `<your-server-url>` with your server's url.
 2. You will get "This Connection is Not Private" error. Click on "visit this website", and reload the website.
 3. Go to [web.stremio.com](https://web.stremio.com) and **login**. Then profile > Settings > Streaming. Click on "+ Add URL" and add the same URL `https://<your-server-url>` you added before then select the URL again and copy the "Remote URL". 
