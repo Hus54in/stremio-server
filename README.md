@@ -25,9 +25,15 @@ This single-file docker-compose project wraps the official Stremio server image,
 ## Stremio on IOS/Ipad OS
 1. Open Safari (other browers will not work), then go to `https://<your-server-url>` (make sure its HTTPS and not http) replace `<your-server-url>` with your server's url.
 2. You will get "This Connection is Not Private" error. Click on "visit this website", and reload the website.
-3. Go to [web.stremio.com](https://web.stremio.com) and login. Then profile > Settings > Streaming. Click on "+ Add URL" and add the same URL `https://<your-server-url>` you added before then select the URL again and copy the "Remote URL". 
+3. Go to [web.stremio.com](https://web.stremio.com) and **login**. Then profile > Settings > Streaming. Click on "+ Add URL" and add the same URL `https://<your-server-url>` you added before then select the URL again and copy the "Remote URL". 
 4. Tap on share icon and select "Add to Home Screen".
-5. Open the Stremio from Home Screen, Login and go to profile > Settings > Streaming. Click on "+ Add URL" and add paste the "Remote URL" you copied before.
+5. Open the Stremio from Home Screen, **Login** and go to profile > Settings > Streaming. Click on "+ Add URL" and add paste the "Remote URL" you copied before. Select the URL you pasted. 
+6. Go to Advanced Section and choose VLC option in "Play in external player". Download VLC media player from the App Store.
+
+## Accessing the stremio server outside of local network
+Opening ports on your home network is not recommended due to potential security risks.
+
+Instead, you can set up a WireGuard VPN to securely connect your device to your home network. Once connected, your device will behave as if it is on the local network, allowing you to safely access and use the Stremio server without exposing it directly to the internet.
 
 
 
