@@ -11,7 +11,7 @@ This single-file docker-compose project wraps the official Stremio server image,
 1. Follow the [setup](https://docs.docker.com/engine/install) guide for your linux distribution.
 
 2. Download the `docker-compose.yml` onto your server using: 
-`wget `
+`wget https://raw.githubusercontent.com/Hus54in/stremio-server/refs/heads/main/docker-compose.yml`
 
 3. Run it using:
 `docker compose up -d`
